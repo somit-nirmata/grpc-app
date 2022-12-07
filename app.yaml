@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: go-grpc-greeter-server
+  name: go-grpc-greeter-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-grpc-greeter-server
+  template:
+    metadata:
+      labels:
+        app: go-grpc-greeter-server
+    spec:
+      containers:
+      - image: redaptcloud/grpc-greeter-go-server   # Edit this for your reponame
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 50Mi
+        name: go-grpc-greeter-server
+        ports:
+        - containerPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: go-grpc-greeter-server
+  name: go-grpc-greeter-server
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 50051
+    nodePort: 31117
+  selector:
+    app: go-grpc-greeter-server
+  type: NodePort
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grpc-ingress
+  namespace: test-grpc
+  annotations:
+    kubernetes.io/ingress.class: haproxy
+spec:
+  tls:
+    - hosts:
+        - test-ingress.lab.nirmata.co
+      secretName: tls-secret
+  rules:
+    - host: test-ingress.lab.nirmata.co
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: go-grpc-greeter-server
+                port:
+                  number: 80
