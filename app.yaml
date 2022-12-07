@@ -56,7 +56,7 @@ spec:
         - test-ingress.lab.nirmata.co
       secretName: tls-secret
   rules:
-    - host: test-ingress.lab.nirmata.co
+    - host: test-grpc.lab.nirmata.co
       http:
         paths:
           - path: /
